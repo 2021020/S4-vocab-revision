@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary Masterclass — Interactive Presentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #222240;
+  --text: #e8e8f0;
+  --text-dim: #9999bb;
+  --accent: #6c63ff;
+  --accent2: #ff6584;
+  --green: #00c9a7;
+  --blue: #4fc3f7;
+  --orange: #ffb74d;
+  --purple: #b388ff;
+  --pink: #f48fb1;
+  --teal: #80cbc4;
+  --red: #ef5350;
+  --gold: #ffd54f;
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+
+/* Progress Bar */
+#progress-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; background: var(--surface2);
+  z-index: 100;
+}
+#progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width var(--transition);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Top Bar */
+#top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  z-index: 50;
+  flex-shrink: 0;
+}
+#top-bar .unit-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+#top-bar .slide-counter {
+  font-size: 13px; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+#top-bar .menu-btn {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 20px; padding: 4px 8px;
+  border-radius: 8px; transition: all 0.2s;
+}
+#top-bar .menu-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* Slide Container */
+#slide-container {
+  flex: 1; overflow: hidden; position: relative;
+}
+.slide {
+  position: absolute; inset: 0;
+  padding: 40px 48px;
+  overflow-y: auto;
+  opacity: 0; transform: translateX(60px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface2) transparent;
+}
+.slide::-webkit-scrollbar { width: 6px; }
+.slide::-webkit-scrollbar-track { background: transparent; }
+.slide::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+.slide.active {
+  opacity: 1; transform: translateX(0);
+  pointer-events: all;
+}
+.slide.exit-left {
+  opacity: 0; transform: translateX(-60px);
+}
+
+/* Navigation */
+#nav {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; padding: 16px 24px;
+  background: var(--surface);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0; z-index: 50;
+}
+.nav-btn {
+  background: var(--surface2); border: none;
+  color: var(--text); width: 44px; height: 44px;
+  border-radius: 12px; cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.nav-btn:hover { background: var(--accent); transform: scale(1.05); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+.nav-btn:disabled:hover { background: var(--surface2); }
+#nav-dots {
+  display: flex; gap: 6px; align-items: center;
+}
+.nav-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--surface2); cursor: pointer;
+  transition: all 0.3s; border: none;
+}
+.nav-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+.nav-dot:hover { background: var(--text-dim); }
+
+/* ===== SLIDE STYLES ===== */
+
+/* Title Slide */
+.title-slide {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 30%, rgba(108,99,255,0.15), transparent 70%);
+}
+.title-slide h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 56px; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 16px;
+  line-height: 1.2;
+}
+.title-slide .subtitle {
+  font-size: 20px; color: var(--text-dim);
+  max-width: 600px; line-height: 1.6;
+  margin-bottom: 40px;
+}
+.title-slide .meta {
+  display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+}
+.title-slide .meta-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; background: var(--surface2);
+  border-radius: 24px; font-size: 13px; color: var(--text-dim);
+}
+.title-slide .start-btn {
+  margin-top: 40px; padding: 14px 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 30px; color: white;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.3s; box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+}
+.title-slide .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.5); }
+
+/* TOC Slide */
+.toc-slide h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; margin-bottom: 32px;
+  color: var(--text);
+}
+.toc-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.toc-card {
+  padding: 20px 24px; background: var(--surface2);
+  border-radius: var(--radius); cursor: pointer;
+  transition: all 0.3s; border: 1px solid transparent;
+  position: relative; overflow: hidden;
+}
+.toc-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%; border-radius: 4px 0 0 4px;
+}
+.toc-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.1); box-shadow: var(--shadow); }
+.toc-card .toc-num {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; margin-bottom: 8px; opacity: 0.7;
+}
+.toc-card .toc-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.toc-card .toc-count { font-size: 12px; color: var(--text-dim); }
+
+/* Unit Intro Slide */
+.unit-intro {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+}
+.unit-intro .unit-icon { font-size: 72px; margin-bottom: 24px; }
+.unit-intro h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px; margin-bottom: 12px;
+}
+.unit-intro .unit-desc {
+  font-size: 18px; color: var(--text-dim);
+  max-width: 600px; line-height: 1.6; margin-bottom: 32px;
+}
+.unit-intro .word-preview {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center; max-width: 700px;
+}
+.unit-intro .word-chip {
+  padding: 6px 14px; background: var(--surface2);
+  border-radius: 20px; font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.2s;
+}
+.unit-intro .word-chip:hover { border-color: var(--accent); }
+
+/* Word Slide */
+.word-slide { max-width: 900px; margin: 0 auto; }
+.word-header {
+  display: flex; align-items: flex-start; gap: 24px;
+  margin-bottom: 32px;
+}
+.word-main { flex: 1; }
+.word-title {
+  font-size: 42px; font-weight: 800;
+  margin-bottom: 8px; line-height: 1.2;
+  display: flex; align-items: center; gap: 12px;
+}
+.pronounce-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(108,99,255,0.15); border: 2px solid rgba(108,99,255,0.3);
+  color: var(--accent); font-size: 18px; cursor: pointer;
+  transition: all 0.25s; flex-shrink: 0;
+}
+.pronounce-btn:hover { background: rgba(108,99,255,0.3); transform: scale(1.1); }
+.pronounce-btn:active { transform: scale(0.95); }
+.pronounce-btn.speaking {
+  background: rgba(108,99,255,0.4); border-color: var(--accent);
+  animation: pulse-ring 1s ease infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(108,99,255,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(108,99,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(108,99,255,0); }
+}
+.pronounce-btn-sm {
+  width: 28px; height: 28px; font-size: 13px;
+  border-radius: 50%; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12); color: var(--text-dim);
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.pronounce-btn-sm:hover { background: rgba(108,99,255,0.2); color: var(--accent); border-color: var(--accent); }
+.pronounce-btn-sm.speaking { background: rgba(108,99,255,0.3); color: var(--accent); animation: pulse-ring 1s ease infinite; }
+.word-phonetic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.syllable-display {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.syllable {
+  padding: 6px 14px; border-radius: 10px;
+  font-size: 22px; font-weight: 600;
+  transition: all 0.3s;
+}
+.syllable.stressed {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  font-weight: 800;
+}
+.word-pos {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 6px; font-size: 12px;
+  font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.word-definition {
+  font-size: 18px; line-height: 1.7;
+  color: var(--text); margin-bottom: 8px;
+}
+.word-simple {
+  font-size: 15px; color: var(--text-dim);
+  font-style: italic; line-height: 1.6;
+  padding-left: 16px;
+  border-left: 3px solid var(--accent);
+}
+
+/* Word Illustration */
+.word-illustration {
+  width: 160px; height: 160px;
+  border-radius: 20px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 64px; flex-shrink: 0;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: var(--shadow);
+}
+
+/* Section Cards */
+.section-card {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 24px; margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.section-card h3 {
+  font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 16px; display: flex;
+  align-items: center; gap: 8px;
+}
+.section-card h3 .icon { font-size: 18px; }
+
+/* Collocations */
+.collocation-list { display: flex; flex-direction: column; gap: 8px; }
+.collocation-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; background: rgba(255,255,255,0.03);
+  border-radius: 10px; font-size: 15px;
+}
+.collocation-item .bullet {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.collocation-item .highlight { font-weight: 600; }
+
+/* Examples */
+.example-list { display: flex; flex-direction: column; gap: 12px; }
+.example-item {
+  padding: 14px 18px; background: rgba(255,255,255,0.03);
+  border-radius: 12px; font-size: 15px;
+  line-height: 1.6; border-left: 3px solid;
+}
+.example-item .num {
+  font-weight: 700; font-size: 12px;
+  margin-right: 8px; opacity: 0.5;
+}
+
+/* Food for Thought */
+.food-for-thought {
+  background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(255,101,132,0.1));
+  border: 1px solid rgba(108,99,255,0.2);
+  border-radius: var(--radius);
+  padding: 24px; margin-top: 8px;
+}
+.food-for-thought h3 { color: var(--accent); }
+.food-for-thought p {
+  font-size: 16px; line-height: 1.7;
+  font-style: italic;
+}
+
+/* Summary Slide */
+.summary-slide h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; margin-bottom: 24px;
+}
+.mindmap-container {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+}
+.mindmap-center {
+  padding: 16px 32px; border-radius: 16px;
+  font-size: 20px; font-weight: 700;
+  text-align: center;
+}
+.mindmap-branches {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center; max-width: 800px;
+}
+.mindmap-branch {
+  padding: 8px 16px; border-radius: 12px;
+  font-size: 14px; font-weight: 500;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.2s; cursor: default;
+}
+.mindmap-branch:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Expression Slide */
+.expr-slide { max-width: 900px; margin: 0 auto; }
+.expr-header {
+  margin-bottom: 28px;
+}
+.expr-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; margin-bottom: 8px;
+}
+.expr-header .expr-desc {
+  font-size: 16px; color: var(--text-dim);
+  line-height: 1.6;
+}
+.expr-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+.expr-card {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 20px; border: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.3s;
+}
+.expr-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-2px); }
+.expr-card .expr-phrase {
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.expr-card .expr-example {
+  font-size: 14px; color: var(--text-dim);
+  line-height: 1.6; font-style: italic;
+}
+.expr-card .expr-note {
+  font-size: 12px; color: var(--accent);
+  margin-top: 8px; font-weight: 500;
+}
+
+/* Quiz Slide */
+.quiz-slide { max-width: 900px; margin: 0 auto; }
+.quiz-slide h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; margin-bottom: 8px;
+}
+.quiz-slide .quiz-subtitle {
+  font-size: 15px; color: var(--text-dim);
+  margin-bottom: 28px;
+}
+.quiz-question {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.quiz-question .q-num {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 8px; opacity: 0.5;
+}
+.quiz-question .q-text {
+  font-size: 17px; font-weight: 600;
+  margin-bottom: 16px; line-height: 1.5;
+}
+.quiz-question .q-blank {
+  display: inline-block; min-width: 120px;
+  border-bottom: 2px dashed var(--accent);
+  padding: 2px 8px; margin: 0 4px;
+  font-weight: 700; color: var(--accent);
+}
+.quiz-options {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.quiz-option {
+  padding: 12px 16px; background: rgba(255,255,255,0.03);
+  border-radius: 10px; cursor: pointer;
+  font-size: 15px; transition: all 0.2s;
+  border: 2px solid transparent;
+  display: flex; align-items: center; gap: 10px;
+}
+.quiz-option:hover { background: rgba(255,255,255,0.06); }
+.quiz-option .opt-letter {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  background: var(--surface); flex-shrink: 0;
+}
+.quiz-option.selected { border-color: var(--accent); background: rgba(108,99,255,0.1); }
+.quiz-option.correct { border-color: var(--green); background: rgba(0,201,167,0.1); }
+.quiz-option.wrong { border-color: var(--red); background: rgba(239,83,80,0.1); }
+.quiz-option.correct .opt-letter { background: var(--green); color: #000; }
+.quiz-option.wrong .opt-letter { background: var(--red); color: #fff; }
+
+.quiz-fill {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.quiz-fill input {
+  flex: 1; padding: 10px 14px;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px; color: var(--text);
+  font-size: 15px; font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+.quiz-fill input:focus {
+  outline: none; border-color: var(--accent);
+  background: rgba(108,99,255,0.05);
+}
+.quiz-fill input.correct { border-color: var(--green); background: rgba(0,201,167,0.05); }
+.quiz-fill input.wrong { border-color: var(--red); background: rgba(239,83,80,0.05); }
+.quiz-fill .check-btn {
+  padding: 10px 16px; background: var(--accent);
+  border: none; border-radius: 10px; color: white;
+  font-weight: 600; cursor: pointer; font-size: 13px;
+  transition: all 0.2s; white-space: nowrap;
+}
+.quiz-fill .check-btn:hover { opacity: 0.9; }
+.word-bank {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 14px 16px; margin-bottom: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 12px;
+}
+.word-bank-label {
+  width: 100%; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-dim); margin-bottom: 4px;
+}
+.word-chip {
+  padding: 6px 14px; border-radius: 20px;
+  background: rgba(108,99,255,0.12); color: var(--accent);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1px solid rgba(108,99,255,0.25);
+  transition: all 0.2s; user-select: none;
+}
+.word-chip:hover { background: rgba(108,99,255,0.25); transform: translateY(-1px); }
+.word-chip.used { opacity: 0.35; pointer-events: none; text-decoration: line-through; }
+
+.quiz-submit {
+  display: block; margin: 24px auto 0;
+  padding: 14px 40px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 30px; color: white;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.3s;
+}
+.quiz-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(108,99,255,0.4); }
+
+.quiz-result {
+  text-align: center; padding: 32px;
+  background: var(--surface2); border-radius: var(--radius);
+  margin-top: 24px; display: none;
+}
+.quiz-result.show { display: block; }
+.quiz-result .score {
+  font-size: 48px; font-weight: 800;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.quiz-result .score-label {
+  font-size: 16px; color: var(--text-dim); margin-top: 8px;
+}
+.quiz-result .score-msg {
+  font-size: 18px; margin-top: 16px; font-weight: 500;
+}
+
+/* Matching Exercise */
+.matching-container {
+  display: flex; gap: 24px; justify-content: center;
+  flex-wrap: wrap;
+}
+.matching-col {
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 200px;
+}
+.matching-item {
+  padding: 12px 16px; background: var(--surface2);
+  border-radius: 10px; cursor: pointer;
+  font-size: 14px; transition: all 0.2s;
+  border: 2px solid transparent;
+  text-align: center;
+}
+.matching-item:hover { border-color: var(--accent); }
+.matching-item.selected { border-color: var(--accent); background: rgba(108,99,255,0.15); }
+.matching-item.matched { border-color: var(--green); background: rgba(0,201,167,0.1); opacity: 0.7; pointer-events: none; }
+.matching-item.wrong-match { border-color: var(--red); background: rgba(239,83,80,0.1); }
+
+/* Two Column Layout for Adv/Disadv */
+.two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.col-header {
+  padding: 12px 20px; border-radius: 12px 12px 0 0;
+  font-weight: 700; font-size: 15px; text-align: center;
+}
+.col-body {
+  background: var(--surface2);
+  border-radius: 0 0 12px 12px;
+  padding: 16px;
+}
+.col-item {
+  padding: 10px 14px; margin-bottom: 8px;
+  border-radius: 8px; font-size: 14px;
+  line-height: 1.5;
+  background: rgba(255,255,255,0.03);
+}
+.col-item:last-child { margin-bottom: 0; }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.animate-in > * {
+  animation: fadeInUp 0.5s ease both;
+}
+.animate-in > *:nth-child(1) { animation-delay: 0.05s; }
+.animate-in > *:nth-child(2) { animation-delay: 0.1s; }
+.animate-in > *:nth-child(3) { animation-delay: 0.15s; }
+.animate-in > *:nth-child(4) { animation-delay: 0.2s; }
+.animate-in > *:nth-child(5) { animation-delay: 0.25s; }
+.animate-in > *:nth-child(6) { animation-delay: 0.3s; }
+.animate-in > *:nth-child(7) { animation-delay: 0.35s; }
+.animate-in > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .slide { padding: 24px 20px; }
+  .title-slide h1 { font-size: 36px; }
+  .word-title { font-size: 28px; }
+  .word-header { flex-direction: column; }
+  .word-illustration { width: 100%; height: 120px; }
+  .expr-grid { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .matching-container { flex-direction: column; align-items: center; }
+}
+
+/* Syllable Colors */
+.syl-c0 { background: rgba(239,83,80,0.15); color: #ef5350; }
+.syl-c1 { background: rgba(79,195,247,0.15); color: #4fc3f7; }
+.syl-c2 { background: rgba(0,201,167,0.15); color: #00c9a7; }
+.syl-c3 { background: rgba(255,183,77,0.15); color: #ffb74d; }
+.syl-c4 { background: rgba(179,136,255,0.15); color: #b388ff; }
+.syl-c5 { background: rgba(244,143,177,0.15); color: #f48fb1; }
+.syl-c6 { background: rgba(128,203,196,0.15); color: #80cbc4; }
+.syl-c7 { background: rgba(255,213,79,0.15); color: #ffd54f; }
+
+/* Unit theme colors */
+.theme-green .unit-badge, .theme-green .mindmap-center { background: rgba(0,201,167,0.2); color: var(--green); }
+.theme-blue .unit-badge, .theme-blue .mindmap-center { background: rgba(79,195,247,0.2); color: var(--blue); }
+.theme-purple .unit-badge, .theme-purple .mindmap-center { background: rgba(179,136,255,0.2); color: var(--purple); }
+.theme-orange .unit-badge, .theme-orange .mindmap-center { background: rgba(255,183,77,0.2); color: var(--orange); }
+.theme-teal .unit-badge, .theme-teal .mindmap-center { background: rgba(128,203,196,0.2); color: var(--teal); }
+.theme-red .unit-badge, .theme-red .mindmap-center { background: rgba(239,83,80,0.2); color: var(--red); }
+.theme-gold .unit-badge, .theme-gold .mindmap-center { background: rgba(255,213,79,0.2); color: var(--gold); }
+
+/* Scrollbar for slide */
+.slide { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <div id="top-bar">
+    <button class="menu-btn" onclick="goToSlide(0)" title="Home">☰</button>
+    <span class="unit-badge" id="unit-badge">Vocabulary Masterclass</span>
+    <span class="slide-counter" id="slide-counter">1 / 1</span>
+  </div>
+  <div id="slide-container"></div>
+  <div id="nav">
+    <button class="nav-btn" id="btn-prev" onclick="prevSlide()">◀</button>
+    <div id="nav-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="nextSlide()">▶</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const SYLLABLE_COLORS = ['syl-c0','syl-c1','syl-c2','syl-c3','syl-c4','syl-c5','syl-c6','syl-c7'];
+
+const UNIT_THEMES = {
+  10: { theme: 'theme-green', color: '#00c9a7', icon: '🌍', name: 'Environmental Protection', short: 'U5' },
+  11: { theme: 'theme-blue', color: '#4fc3f7', icon: '💻', name: 'Technology & Communication', short: 'U6' },
+  12: { theme: 'theme-purple', color: '#b388ff', icon: '🔗', name: 'Additive & Contrastive', short: 'Expressions' },
+  13: { theme: 'theme-orange', color: '#ffb74d', icon: '⚡', name: 'Cause-Effect Relationships', short: 'Expressions' },
+  14: { theme: 'theme-teal', color: '#80cbc4', icon: '📊', name: 'Report Writing', short: 'U6 & U8' },
+  15: { theme: 'theme-red', color: '#ef5350', icon: '⚖️', name: 'Advantages & Disadvantages', short: 'U5' },
+  16: { theme: 'theme-gold', color: '#ffd54f', icon: '✍️', name: 'Argumentative Writing', short: 'U6' }
+};
+
+// UVD 10: Environmental Protection
+const UVD10 = [
+  {
+    word: 'biodiversity',
+    phonetic: '/ˌbaɪ.əʊ.daɪˈvɜː.sə.ti/',
+    syllables: ['bi','o','di','ver','si','ty'],
+    stressed: 3,
+    pos: 'noun',
+    definition: 'The variety of plant and animal life in a particular habitat or on Earth as a whole.',
+    simple: 'Think of it as "nature\'s variety pack" — the more species, the richer the biodiversity.',
+    collocations: ['biodiversity loss', 'protect biodiversity', 'rich biodiversity', 'marine biodiversity'],
+    examples: [
+      'The Amazon rainforest is home to extraordinary <b>biodiversity</b>.',
+      '<b>Biodiversity</b> loss threatens the stability of entire ecosystems.'
+    ],
+    illustration: '🦋🌿🐸🦜',
+    foodForThought: 'If you could save only one endangered species, which would you choose — and why does biodiversity matter beyond individual species?'
+  },
+  {
+    word: 'carbon emission',
+    phonetic: '/ˈkɑː.bən ɪˈmɪʃ.ən/',
+    syllables: ['car','bon','e','mis','sion'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'The release of carbon dioxide (CO₂) and other carbon compounds into the atmosphere.',
+    simple: 'Every time we burn fossil fuels, we send carbon into the air — that\'s a carbon emission.',
+    collocations: ['reduce carbon emissions', 'carbon emission targets', 'zero carbon emissions', 'cut carbon emissions'],
+    examples: [
+      'The government pledged to reduce <b>carbon emissions</b> by 50% by 2030.',
+      'Transportation is one of the largest sources of <b>carbon emissions</b>.'
+    ],
+    illustration: '🏭💨🌍',
+    foodForThought: 'What everyday activities of yours contribute most to carbon emissions? Could you reduce any of them?'
+  },
+  {
+    word: 'greenhouse gases',
+    phonetic: '/ˈɡriːn.haʊs ˈɡæs.ɪz/',
+    syllables: ['green','house','gas','es'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Gases in the atmosphere that trap heat, such as CO₂, methane, and nitrous oxide.',
+    simple: 'Like a blanket around the Earth — these gases keep heat in, warming the planet.',
+    collocations: ['emit greenhouse gases', 'greenhouse gas emissions', 'reduce greenhouse gases'],
+    examples: [
+      'Methane is a potent <b>greenhouse gas</b>, even more effective at trapping heat than CO₂.',
+      'Agriculture is a significant source of <b>greenhouse gases</b>.'
+    ],
+    illustration: '🏠🌡️☀️',
+    foodForThought: 'Without any greenhouse gases, Earth would freeze. So why is having too much of them a problem?'
+  },
+  {
+    word: 'climate change',
+    phonetic: '/ˈklaɪ.mət tʃeɪndʒ/',
+    syllables: ['cli','mate','change'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Long-term shifts in global temperatures and weather patterns, largely driven by human activity.',
+    simple: 'The Earth\'s weather system going haywire — hotter summers, wilder storms, melting ice.',
+    collocations: ['combat climate change', 'climate change policy', 'climate change denial', 'adapt to climate change'],
+    examples: [
+      '<b>Climate change</b> is accelerating faster than scientists predicted a decade ago.',
+      'We need urgent international cooperation to address <b>climate change</b>.'
+    ],
+    illustration: '🌡️🌊🔥',
+    foodForThought: 'How has climate change already affected the region where you live? What changes do you expect in the next 20 years?'
+  },
+  {
+    word: 'global warming',
+    phonetic: '/ˈɡləʊ.bəl ˈwɔː.mɪŋ/',
+    syllables: ['glo','bal','warm','ing'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'The gradual increase in Earth\'s average surface temperature due to human activities.',
+    simple: 'Earth is running a fever — and it\'s getting worse every year.',
+    collocations: ['global warming potential', 'slow global warming', 'global warming skeptic'],
+    examples: [
+      'The melting of polar ice caps is one visible effect of <b>global warming</b>.',
+      'Scientists agree that <b>global warming</b> is primarily caused by human activity.'
+    ],
+    illustration: '🌍🔥🌡️',
+    foodForThought: '"Global warming" and "climate change" are often used interchangeably. Are they exactly the same thing? What\'s the difference?'
+  },
+  {
+    word: 'conservation',
+    phonetic: '/ˌkɒn.səˈveɪ.ʃən/',
+    syllables: ['con','ser','va','tion'],
+    stressed: 2,
+    pos: 'noun',
+    definition: 'The protection and careful management of natural resources and the environment.',
+    simple: 'Looking after nature so it\'s still there for future generations.',
+    collocations: ['wildlife conservation', 'conservation efforts', 'conservation area', 'energy conservation'],
+    examples: [
+      'The national park was established for the <b>conservation</b> of rare species.',
+      '<b>Conservation</b> programs have helped increase the population of giant pandas.'
+    ],
+    illustration: '🛡️🌳🦌',
+    foodForThought: 'Should conservation focus on protecting individual species, or entire ecosystems? Which approach is more effective?'
+  },
+  {
+    word: 'extreme weather',
+    phonetic: '/ɪkˈstriːm ˈweð.ər/',
+    syllables: ['ex','treme','weath','er'],
+    stressed: 1,
+    pos: 'noun phrase',
+    definition: 'Severe, unexpected, or unusual weather events such as hurricanes, floods, and heatwaves.',
+    simple: 'Weather on steroids — storms, floods, and heatwaves that are far beyond the normal range.',
+    collocations: ['extreme weather events', 'extreme weather conditions', 'extreme weather warning'],
+    examples: [
+      'The frequency of <b>extreme weather</b> events has doubled in the past 30 years.',
+      'Climate scientists predict more <b>extreme weather</b> in the coming decades.'
+    ],
+    illustration: '🌪️🌊☀️',
+    foodForThought: 'Have you personally experienced any extreme weather events? How did it affect your community?'
+  },
+  {
+    word: 'ecosystem',
+    phonetic: '/ˈiː.kəʊ.sɪs.təm/',
+    syllables: ['e','co','sys','tem'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'A biological community of interacting organisms and their physical environment.',
+    simple: 'Nature\'s web of life — every plant, animal, and microbe connected in a living system.',
+    collocations: ['fragile ecosystem', 'balanced ecosystem', 'marine ecosystem', 'disrupt an ecosystem'],
+    examples: [
+      'Coral reefs are among the most diverse <b>ecosystems</b> on the planet.',
+      'Pollution can devastate an entire <b>ecosystem</b> in a matter of years.'
+    ],
+    illustration: '🕸️🐠🪸',
+    foodForThought: 'If you removed one species from an ecosystem, could the whole system collapse? Why or why not?'
+  },
+  {
+    word: 'electric cars',
+    phonetic: '/ɪˈlek.trɪk kɑːz/',
+    syllables: ['e','lec','tric','cars'],
+    stressed: 1,
+    pos: 'noun phrase',
+    definition: 'Vehicles powered by electricity rather than petrol or diesel, producing zero direct emissions.',
+    simple: 'Cars that run on batteries instead of petrol — cleaner, quieter, and increasingly popular.',
+    collocations: ['electric car sales', 'switch to electric cars', 'electric car charging', 'affordable electric cars'],
+    examples: [
+      'Many countries plan to ban petrol cars and promote <b>electric cars</b> by 2035.',
+      '<b>Electric cars</b> produce zero tailpipe emissions, but their batteries raise environmental concerns.'
+    ],
+    illustration: '🚗⚡🔋',
+    foodForThought: 'Electric cars don\'t produce exhaust, but manufacturing their batteries has an environmental cost. Are they truly "green"?'
+  },
+  {
+    word: 'endangered species',
+    phonetic: '/ɪnˈdeɪn.dʒəd ˈspiː.ʃiːz/',
+    syllables: ['en','dan','gered','spe','cies'],
+    stressed: 1,
+    pos: 'noun phrase',
+    definition: 'Species at serious risk of extinction due to habitat loss, hunting, or environmental changes.',
+    simple: 'Animals and plants that are dangerously close to disappearing forever.',
+    collocations: ['protect endangered species', 'endangered species list', 'critically endangered species'],
+    examples: [
+      'The giant panda is no longer classified as an <b>endangered species</b> thanks to conservation efforts.',
+      'Habitat destruction is the leading cause of species becoming <b>endangered</b>.'
+    ],
+    illustration: '🐼🦏🐅',
+    foodForThought: 'Should we spend millions saving a single endangered species, or focus on protecting entire habitats?'
+  },
+  {
+    word: 'fuel',
+    phonetic: '/ˈfjuː.əl/',
+    syllables: ['fu','el'],
+    stressed: 0,
+    pos: 'noun / verb',
+    definition: 'A material such as coal, gas, or oil burned to produce heat or power.',
+    simple: 'The stuff that makes things go — petrol for cars, coal for power plants.',
+    collocations: ['fossil fuel', 'fuel consumption', 'fuel efficiency', 'run out of fuel'],
+    examples: [
+      'The world is gradually shifting away from <b>fossil fuels</b> towards cleaner alternatives.',
+      'Rising <b>fuel</b> prices have encouraged people to use public transport.'
+    ],
+    illustration: '⛽🛢️🔥',
+    foodForThought: 'What would happen if fossil fuels suddenly disappeared tomorrow? How would society adapt?'
+  },
+  {
+    word: 'renewable energy',
+    phonetic: '/rɪˈnjuː.ə.bəl ˈen.ə.dʒi/',
+    syllables: ['re','new','a','ble','en','er','gy'],
+    stressed: 1,
+    pos: 'noun phrase',
+    definition: 'Energy from sources that are naturally replenished, such as wind, solar, and hydro power.',
+    simple: 'Energy that never runs out — sunshine, wind, and water that keep giving.',
+    collocations: ['renewable energy sources', 'invest in renewable energy', 'renewable energy sector'],
+    examples: [
+      'Denmark now generates over 40% of its electricity from <b>renewable energy</b>.',
+      'The transition to <b>renewable energy</b> is essential for a sustainable future.'
+    ],
+    illustration: '☀️💨💧',
+    foodForThought: 'If renewable energy is so great, why hasn\'t the whole world switched to it already?'
+  },
+  {
+    word: 'solar power',
+    phonetic: '/ˈsəʊ.lə ˈpaʊ.ər/',
+    syllables: ['so','lar','pow','er'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Electricity generated by converting sunlight into energy using photovoltaic cells.',
+    simple: 'Turning sunshine into electricity — panels on rooftops catching rays to power homes.',
+    collocations: ['solar power plant', 'solar power generation', 'solar power capacity'],
+    examples: [
+      '<b>Solar power</b> has become one of the cheapest forms of electricity in many countries.',
+      'Many households are installing <b>solar panels</b> to reduce their energy bills.'
+    ],
+    illustration: '☀️🔋🏠',
+    foodForThought: 'Solar panels work best in sunny places. How could countries with less sunshine still benefit from solar power?'
+  },
+  {
+    word: 'habitat',
+    phonetic: '/ˈhæb.ɪ.tæt/',
+    syllables: ['hab','i','tat'],
+    stressed: 0,
+    pos: 'noun',
+    definition: 'The natural home or environment of an animal, plant, or other organism.',
+    simple: 'Where a living thing calls home — the forest for a bear, the ocean for a whale.',
+    collocations: ['natural habitat', 'destroy habitat', 'habitat loss', 'habitat conservation'],
+    examples: [
+      'Deforestation is destroying the <b>habitat</b> of countless species.',
+      'Wildlife corridors help animals move between fragmented <b>habitats</b>.'
+    ],
+    illustration: '🏠🦁🌿',
+    foodForThought: 'What is your "habitat"? What would happen if someone destroyed it?'
+  },
+  {
+    word: 'landfill',
+    phonetic: '/ˈlænd.fɪl/',
+    syllables: ['land','fill'],
+    stressed: 0,
+    pos: 'noun',
+    definition: 'A site where waste is disposed of by burying it under layers of earth.',
+    simple: 'A giant hole in the ground where society\'s rubbish gets buried.',
+    collocations: ['landfill site', 'landfill waste', 'reduce landfill', 'landfill gas'],
+    examples: [
+      'Much of our plastic waste ends up in <b>landfills</b>, where it takes centuries to decompose.',
+      'Organic waste in <b>landfills</b> produces methane, a potent greenhouse gas.'
+    ],
+    illustration: '🗑️⛰️💨',
+    foodForThought: 'Where does your rubbish go after the bin lorry collects it? Have you ever visited a landfill site?'
+  },
+  {
+    word: 'natural disasters',
+    phonetic: '/ˈnætʃ.ər.əl dɪˈzɑːs.təz/',
+    syllables: ['nat','u','ral','dis','as','ters'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Catastrophic events caused by natural processes, such as earthquakes, tsunamis, and volcanic eruptions.',
+    simple: 'Nature at its most destructive — earthquakes, floods, hurricanes that reshape landscapes.',
+    collocations: ['natural disaster relief', 'recover from a natural disaster', 'natural disaster preparedness'],
+    examples: [
+      'Climate change may increase the frequency and severity of <b>natural disasters</b>.',
+      'The earthquake was one of the worst <b>natural disasters</b> in the country\'s history.'
+    ],
+    illustration: '🌋🌊🌪️',
+    foodForThought: 'Can a disaster still be called "natural" if human activity made it worse?'
+  },
+  {
+    word: 'natural resources',
+    phonetic: '/ˈnætʃ.ər.əl rɪˈzɔːs.ɪz/',
+    syllables: ['nat','u','ral','re','sourc','es'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Materials such as water, minerals, forests, and fossil fuels that occur in nature and are used by humans.',
+    simple: 'The gifts nature gives us — water, wood, oil, metals — that we use every day.',
+    collocations: ['deplete natural resources', 'natural resource management', 'finite natural resources'],
+    examples: [
+      'Clean water is one of our most precious <b>natural resources</b>.',
+      'Many countries are overexploiting their <b>natural resources</b> for economic growth.'
+    ],
+    illustration: '💎💧🪵',
+    foodForThought: 'Which natural resource do you think will run out first? What would happen if it did?'
+  },
+  {
+    word: 'pollution',
+    phonetic: '/pəˈluː.ʃən/',
+    syllables: ['pol','lu','tion'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'The introduction of harmful substances or products into the environment.',
+    simple: 'When dirty stuff gets into the air, water, or soil where it doesn\'t belong.',
+    collocations: ['air pollution', 'water pollution', 'reduce pollution', 'pollution levels'],
+    examples: [
+      'Air <b>pollution</b> in major cities causes millions of premature deaths each year.',
+      'Plastic <b>pollution</b> in the oceans is one of the most pressing environmental issues.'
+    ],
+    illustration: '💨🏭🤢',
+    foodForThought: 'Can you see pollution in your daily life? What forms of pollution are most visible — and which are invisible but equally dangerous?'
+  },
+  {
+    word: 'recycle',
+    phonetic: '/ˌriːˈsaɪ.kəl/',
+    syllables: ['re','cy','cle'],
+    stressed: 1,
+    pos: 'verb',
+    definition: 'To convert waste materials into new products to prevent waste of potentially useful materials.',
+    simple: 'Turning old things into new things — used bottles become new bottles, old paper becomes new paper.',
+    collocations: ['recycle waste', 'recycling centre', 'recyclable materials', 'recycle bin'],
+    examples: [
+      'We should all make an effort to <b>recycle</b> paper, plastic, and glass.',
+      'Many materials can be <b>recycled</b> multiple times before they lose quality.'
+    ],
+    illustration: '♻️📦🔄',
+    foodForThought: 'Why do you think many people don\'t recycle even when it\'s easy to do so?'
+  },
+  {
+    word: 'upcycle',
+    phonetic: '/ˈʌp.saɪ.kəl/',
+    syllables: ['up','cy','cle'],
+    stressed: 0,
+    pos: 'verb',
+    definition: 'To reuse discarded objects or materials to create a product of higher quality or value.',
+    simple: 'Like recycling\'s creative cousin — turning junk into something even better than before.',
+    collocations: ['upcycle furniture', 'upcycled clothing', 'upcycle old materials'],
+    examples: [
+      'She <b>upcycled</b> an old wooden pallet into a stylish coffee table.',
+      '<b>Upcycling</b> is becoming increasingly popular as a sustainable design practice.'
+    ],
+    illustration: '🪑✨🎨',
+    foodForThought: 'Can you think of something you own that could be upcycled into something useful or beautiful?'
+  },
+  {
+    word: 'biodegradable',
+    phonetic: '/ˌbaɪ.əʊ.dɪˈɡreɪ.də.bəl/',
+    syllables: ['bi','o','de','grad','a','ble'],
+    stressed: 3,
+    pos: 'adjective',
+    definition: 'Capable of being broken down naturally by bacteria or other living organisms.',
+    simple: 'Stuff that nature can digest — it breaks down and disappears without harming the environment.',
+    collocations: ['biodegradable packaging', 'biodegradable materials', 'fully biodegradable'],
+    examples: [
+      'Many companies are switching to <b>biodegradable</b> packaging to reduce plastic waste.',
+      'Unlike plastic, <b>biodegradable</b> bags decompose within a few months.'
+    ],
+    illustration: '🍃🪱🌱',
+    foodForThought: 'If something is "biodegradable," does that mean we can throw it anywhere? What conditions does biodegradation need?'
+  },
+  {
+    word: 'energy-efficient',
+    phonetic: '/ˈen.ə.dʒi ɪˈfɪʃ.ənt/',
+    syllables: ['en','er','gy','ef','fi','cient'],
+    stressed: 0,
+    pos: 'adjective',
+    definition: 'Using less energy to perform the same task, thereby reducing energy waste.',
+    simple: 'Getting more done with less power — like LED bulbs that use a fraction of the electricity.',
+    collocations: ['energy-efficient appliances', 'energy-efficient building', 'energy-efficient design'],
+    examples: [
+      'Replacing old windows with <b>energy-efficient</b> ones can significantly reduce heating bills.',
+      'The new building was designed to be highly <b>energy-efficient</b>.'
+    ],
+    illustration: '💡📉🏠',
+    foodForThought: 'What\'s the most energy-wasteful thing you do regularly? How could you make it more efficient?'
+  },
+  {
+    word: 'environmentally-friendly',
+    phonetic: '/ɪnˌvaɪ.rənˈmen.tə.li ˈfrend.li/',
+    syllables: ['en','vi','ron','men','tal','ly','friend','ly'],
+    stressed: 1,
+    pos: 'adjective',
+    definition: 'Not harmful to the environment; designed to minimize negative environmental impact.',
+    simple: 'Things that are kind to the planet — they don\'t pollute, waste, or damage nature.',
+    collocations: ['environmentally-friendly products', 'environmentally-friendly practices', 'eco-friendly'],
+    examples: [
+      'Consumers are increasingly choosing <b>environmentally-friendly</b> products.',
+      'The company adopted <b>environmentally-friendly</b> manufacturing processes.'
+    ],
+    illustration: '🌍💚🌱',
+    foodForThought: 'Is "environmentally-friendly" a lifestyle choice, a responsibility, or both? Where do you draw the line?'
+  },
+  {
+    word: 'sustainable',
+    phonetic: '/səˈsteɪ.nə.bəl/',
+    syllables: ['sus','tain','a','ble'],
+    stressed: 1,
+    pos: 'adjective',
+    definition: 'Able to be maintained at a certain rate or level without depleting natural resources.',
+    simple: 'Doing things in a way that can last forever — using resources without using them up.',
+    collocations: ['sustainable development', 'sustainable lifestyle', 'sustainable energy', 'sustainable future'],
+    examples: [
+      'We need to find more <b>sustainable</b> ways of living before resources run out.',
+      'The UN\'s <b>Sustainable</b> Development Goals aim to end poverty and protect the planet.'
+    ],
+    illustration: '♻️🌍🤝',
+    foodForThought: 'What does a truly "sustainable" lifestyle look like? Is it possible in the modern world?'
+  }
+];
+
+// UVD 11: Technology and Communication
+const UVD11 = [
+  {
+    word: 'connection',
+    phonetic: '/kəˈnek.ʃən/',
+    syllables: ['con','nec','tion'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'A relationship in which people or things are linked or associated.',
+    simple: 'The link between people, devices, or ideas — being plugged in, literally or figuratively.',
+    collocations: ['internet connection', 'social connection', 'make a connection', 'reliable connection'],
+    examples: [
+      'A stable internet <b>connection</b> is essential for remote work.',
+      'Social media helps us maintain <b>connections</b> with friends abroad.'
+    ],
+    illustration: '🔗🌐🤝',
+    foodForThought: 'Does having more "connections" online make us more connected in real life — or less?'
+  },
+  {
+    word: 'cybercrime',
+    phonetic: '/ˈsaɪ.bər.kraɪm/',
+    syllables: ['cy','ber','crime'],
+    stressed: 0,
+    pos: 'noun',
+    definition: 'Criminal activities carried out using computers or the internet, such as hacking and identity theft.',
+    simple: 'Crime that happens online — stealing data, spreading viruses, scamming people through the internet.',
+    collocations: ['cybercrime prevention', 'combat cybercrime', 'cybercrime rate', 'victim of cybercrime'],
+    examples: [
+      '<b>Cybercrime</b> costs the global economy billions of dollars every year.',
+      'Police have set up special units to tackle <b>cybercrime</b>.'
+    ],
+    illustration: '🕵️💻🔒',
+    foodForThought: 'Have you or anyone you know ever been a victim of cybercrime? What happened?'
+  },
+  {
+    word: 'devices',
+    phonetic: '/dɪˈvaɪ.sɪz/',
+    syllables: ['de','vic','es'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'Pieces of equipment designed for a particular purpose, especially electronic gadgets.',
+    simple: 'The gadgets we use every day — phones, tablets, laptops, smartwatches.',
+    collocations: ['electronic devices', 'mobile devices', 'smart devices', 'connect devices'],
+    examples: [
+      'Students are increasingly using <b>devices</b> for learning both in and out of the classroom.',
+      'Too much screen time on <b>devices</b> can affect sleep quality.'
+    ],
+    illustration: '📱💻⌚',
+    foodForThought: 'How many devices do you use in a typical day? Could you survive a week without any of them?'
+  },
+  {
+    word: 'emoji',
+    phonetic: '/ɪˈməʊ.dʒi/',
+    syllables: ['e','mo','ji'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'Small digital images or icons used to express ideas, emotions, or concepts in electronic communication.',
+    simple: 'Those little pictures in messages — 😊🔥👍 — that add emotion and meaning to text.',
+    collocations: ['use emojis', 'emoji keyboard', 'send an emoji'],
+    examples: [
+      'Emojis can help convey tone in text messages where voice cues are absent.',
+      'The word "emoji" was added to the Oxford English Dictionary in 2013.'
+    ],
+    illustration: '😀🎉💯',
+    foodForThought: 'Can emojis replace words entirely? What can they express that words cannot — and what can\'t they?'
+  },
+  {
+    word: 'eye contact',
+    phonetic: '/aɪ ˈkɒn.tækt/',
+    syllables: ['eye','con','tact'],
+    stressed: 1,
+    pos: 'noun phrase',
+    definition: 'The act of looking directly into another person\'s eyes during communication.',
+    simple: 'Looking someone in the eye while talking — one of the most powerful forms of non-verbal communication.',
+    collocations: ['maintain eye contact', 'make eye contact', 'avoid eye contact', 'direct eye contact'],
+    examples: [
+      'Maintaining <b>eye contact</b> shows confidence and sincerity in a conversation.',
+      'In some cultures, prolonged <b>eye contact</b> is considered rude.'
+    ],
+    illustration: '👁️👁️🗣️',
+    foodForThought: 'How does eye contact change the meaning of a conversation? What does it feel like when someone avoids your gaze?'
+  },
+  {
+    word: 'facial expression',
+    phonetic: '/ˈfeɪ.ʃəl ɪkˈspreʃ.ən/',
+    syllables: ['fa','cial','ex','pres','sion'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'The movements of the face that convey emotions, attitudes, or reactions.',
+    simple: 'What your face does when you feel something — smiling, frowning, raising eyebrows.',
+    collocations: ['read facial expressions', 'facial expression recognition', 'subtle facial expression'],
+    examples: [
+      'Our <b>facial expressions</b> often reveal more than our words.',
+      'AI systems are being developed to recognise human <b>facial expressions</b>.'
+    ],
+    illustration: '😊😐😠',
+    foodForThought: 'Can you control your facial expressions completely? What might "leak" through even when you try to hide your feelings?'
+  },
+  {
+    word: 'messaging apps',
+    phonetic: '/ˈmes.ɪ.dʒɪŋ æps/',
+    syllables: ['mes','sag','ing','apps'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Software applications that allow users to exchange messages, media, and files over the internet.',
+    simple: 'The apps we use to chat — WhatsApp, WeChat, Telegram, iMessage.',
+    collocations: ['popular messaging apps', 'use messaging apps', 'messaging app features'],
+    examples: [
+      '<b>Messaging apps</b> have largely replaced traditional SMS for most smartphone users.',
+      'End-to-end encryption in <b>messaging apps</b> helps protect user privacy.'
+    ],
+    illustration: '💬📱📲',
+    foodForThought: 'How have messaging apps changed the way we communicate? Has the quality of our conversations improved or declined?'
+  },
+  {
+    word: 'misinterpretation',
+    phonetic: '/ˌmɪs.ɪnˌtɜː.prɪˈteɪ.ʃən/',
+    syllables: ['mis','in','ter','pre','ta','tion'],
+    stressed: 3,
+    pos: 'noun',
+    definition: 'An incorrect understanding or explanation of something.',
+    simple: 'Getting the wrong message — when someone misunderstands what you meant.',
+    collocations: ['avoid misinterpretation', 'lead to misinterpretation', 'cultural misinterpretation'],
+    examples: [
+      'Text messages are prone to <b>misinterpretation</b> because they lack tone of voice.',
+      'The <b>misinterpretation</b> of data led to incorrect conclusions in the report.'
+    ],
+    illustration: '❓🤔❌',
+    foodForThought: 'What\'s the funniest or most awkward misinterpretation you\'ve experienced in a conversation?'
+  },
+  {
+    word: 'verbal / non-verbal communication',
+    phonetic: '/ˈvɜː.bəl / /nɒn ˈvɜː.bəl kəˌmjuː.nɪˈkeɪ.ʃən/',
+    syllables: ['ver','bal','non','ver','bal','com','mu','ni','ca','tion'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Verbal: communication through words. Non-verbal: communication through gestures, expressions, and body language.',
+    simple: 'Verbal = what you say. Non-verbal = everything else — your tone, face, hands, posture.',
+    collocations: ['effective verbal communication', 'non-verbal cues', 'non-verbal signals'],
+    examples: [
+      'Studies suggest that over 70% of communication is <b>non-verbal</b>.',
+      'Effective <b>verbal communication</b> requires clarity, conciseness, and confidence.'
+    ],
+    illustration: '🗣️🤫👋',
+    foodForThought: 'Try having a 2-minute conversation using ONLY non-verbal communication. What can you express? What can\'t you?'
+  },
+  {
+    word: 'security',
+    phonetic: '/sɪˈkjʊə.rɪ.ti/',
+    syllables: ['se','cu','ri','ty'],
+    stressed: 1,
+    pos: 'noun',
+    definition: 'The state of being protected against threats, especially in digital contexts like data security.',
+    simple: 'Keeping things safe — your data, your accounts, your identity online.',
+    collocations: ['cyber security', 'data security', 'security measures', 'security breach'],
+    examples: [
+      'Online <b>security</b> is a growing concern as more of our lives move to the digital world.',
+      'The company suffered a major <b>security</b> breach that exposed customer data.'
+    ],
+    illustration: '🔐🛡️🔑',
+    foodForThought: 'How do you protect your online security? What\'s the weakest link in most people\'s digital security?'
+  },
+  {
+    word: 'social media platforms',
+    phonetic: '/ˈsəʊ.ʃəl ˈmiː.di.ə ˈplæt.fɔːmz/',
+    syllables: ['so','cial','me','di','a','plat','forms'],
+    stressed: 0,
+    pos: 'noun phrase',
+    definition: 'Online services that enable users to create, share content, and interact with each other.',
+    simple: 'The websites and apps where we post, share, and connect — Instagram, TikTok, Twitter/X, Facebook.',
+    collocations: ['popular social media platforms', 'social media platform policy', 'join social media platforms'],
+    examples: [
+      '<b>Social media platforms</b> have transformed how news and information spread.',
+      'Many businesses use <b>social media platforms</b> to reach their target audience.'
+    ],
+    illustration: '📱🌐📸',
+    foodForThought: 'If all social media platforms shut down tomorrow, how would your life change? Would it change for better or worse?'
+  },
+  {
+    word: 'privacy (n) / private (adj)',
+    phonetic: '/ˈprɪv.ə.si/ /ˈpraɪ.vət/',
+    syllables: ['pri','va','cy'],
+    stressed: 0,
+    pos: 'noun / adjective',
+    definition: 'Privacy: the right to keep personal matters secret. Private: belonging to or for one person; not public.',
+    simple: 'Privacy = your right to keep things to yourself. Private = something not shared with others.',
+    collocations: ['right to privacy', 'protect privacy', 'private information', 'private conversation'],
+    examples: [
+      'Many people are concerned about their <b>privacy</b> when using online services.',
+      'Please keep this conversation <b>private</b> — it\'s not for public discussion.'
+    ],
+    illustration: '🔒🤫🔐',
+    foodForThought: 'In the age of social media, is true privacy still possible? Should we even expect it?'
+  },
+  {
+    word: 'face-to-face',
+    phonetic: '/feɪs tə feɪs/',
+    syllables: ['face','to','face'],
+    stressed: 0,
+    pos: 'adjective / adverb',
+    definition: 'Involving close proximity and direct personal interaction between people.',
+    simple: 'Meeting someone in person, in the same room — the old-fashioned way of communicating.',
+    collocations: ['face-to-face communication', 'face-to-face meeting', 'face-to-face interaction'],
+    examples: [
+      'Some discussions are much more effective when held <b>face-to-face</b>.',
+      'Remote work has reduced the amount of <b>face-to-face</b> interaction among colleagues.'
+    ],
+    illustration: '👥🗣️🏠',
+    foodForThought: 'What can face-to-face communication achieve that video calls cannot? Is the difference significant?'
+  },
+  {
+    word: 'convey',
+    phonetic: '/kənˈveɪ/',
+    syllables: ['con','vey'],
+    stressed: 1,
+    pos: 'verb',
+    definition: 'To communicate or make known a message, feeling, or idea to someone.',
+    simple: 'To get your message across — to make someone understand what you mean or feel.',
+    collocations: ['convey a message', 'convey meaning', 'convey emotions', 'convey information'],
+    examples: [
+      'Body language can <b>convey</b> emotions more powerfully than words.',
+      'The artist used colour to <b>convey</b> a sense of loneliness in the painting.'
+    ],
+    illustration: '📨💡🗣️',
+    foodForThought: 'What\'s the hardest emotion to convey in writing? How do writers solve this challenge?'
+  },
+  {
+    word: 'stay in touch with',
+    phonetic: '/steɪ ɪn tʌtʃ wɪð/',
+    syllables: ['stay','in','touch','with'],
+    stressed: 0,
+    pos: 'verb phrase',
+    definition: 'To maintain regular communication with someone over time.',
+    simple: 'Keeping in contact — texting, calling, or meeting up so the relationship doesn\'t fade.',
+    collocations: ['stay in touch with friends', 'stay in touch with family', 'hard to stay in touch'],
+    examples: [
+      'Social media makes it easier to <b>stay in touch with</b> people who live far away.',
+      'Even after graduating, she managed to <b>stay in touch with</b> her classmates.'
+    ],
+    illustration: '📱🤝💌',
+    foodForThought: 'Who in your life have you lost touch with? What stopped you from staying in contact?'
+  }
+];
+
+// UVD 12: Additive and Contrastive Relationships
+const UVD12 = {
+  additive: [
+    { phrase: 'First / Second / Third, …', example: '<b>First</b>, we need to analyse the data. <b>Second</b>, we should identify patterns.', note: 'Use for sequencing steps or arguments.' },
+    { phrase: 'Furthermore, …', example: 'The product is affordable. <b>Furthermore</b>, it comes with a two-year warranty.', note: 'Formal; adds a stronger supporting point.' },
+    { phrase: 'Moreover, …', example: 'The city has excellent public transport. <b>Moreover</b>, it is one of the safest places to live.', note: 'Similar to "furthermore"; adds weight to the previous point.' },
+    { phrase: 'In addition, …', example: 'She speaks three languages fluently. <b>In addition</b>, she is learning Japanese.', note: 'Versatile; works in both formal and informal writing.' },
+    { phrase: 'Besides, …', example: 'I don\'t want to go out. <b>Besides</b>, it\'s raining.', note: 'More conversational; can also mean "anyway."' },
+    { phrase: 'One of the reasons is that … Another reason is …', example: '<b>One of the reasons</b> people cycle to work <b>is that</b> it\'s good for health. <b>Another reason</b> is that it saves money.', note: 'Excellent for structuring argumentative essays.' }
+  ],
+  contrastive: [
+    { phrase: 'Although …, …', example: '<b>Although</b> the exam was difficult, she managed to pass with flying colours.', note: 'The clause with "although" comes first; no comma before the main clause.' },
+    { phrase: '… However, …', example: 'The results were promising. <b>However</b>, more research is needed.', note: 'Formal; typically starts a new sentence.' },
+    { phrase: '… but …', example: 'He studied hard <b>but</b> still didn\'t pass the exam.', note: 'Informal; connects two clauses in one sentence.' },
+    { phrase: 'Despite …, …', example: '<b>Despite</b> the heavy rain, the event went ahead as planned.', note: 'Followed by a noun/gerund, NOT a clause.' },
+    { phrase: 'In spite of …, …', example: '<b>In spite of</b> his lack of experience, he was offered the job.', note: 'Same structure as "despite"; slightly more emphatic.' },
+    { phrase: 'Instead of …, …', example: '<b>Instead of</b> driving, she decided to walk to work.', note: 'Highlights an alternative choice or action.' }
+  ]
+};
+
+// UVD 13: Cause-Effect Relationships
+const UVD13 = [
+  { phrase: '… because / since / as …', example: 'She stayed indoors <b>because</b> it was raining heavily.', note: '"Because" is most common; "since/as" are slightly more formal.' },
+  { phrase: '… because of …', example: 'The match was cancelled <b>because of</b> the bad weather.', note: 'Followed by a noun phrase, not a full clause.' },
+  { phrase: '… due to …', example: 'The flight was delayed <b>due to</b> technical issues.', note: 'More formal than "because of."' },
+  { phrase: '… owing to …', example: 'The project\'s success was <b>owing to</b> excellent teamwork.', note: 'Very formal; common in academic writing.' },
+  { phrase: '… may cause …', example: 'Air pollution <b>may cause</b> serious respiratory problems.', note: 'Expresses possibility, not certainty.' },
+  { phrase: '… is caused by …', example: 'The fire <b>was caused by</b> an electrical fault.', note: 'Passive structure; common in reports.' },
+  { phrase: '… is the result of …', example: 'The economic crisis <b>is the result of</b> poor financial management.', note: 'Emphasises the outcome.' },
+  { phrase: '… results in …', example: 'Lack of sleep <b>results in</b> poor concentration.', note: 'Active structure; cause → effect.' },
+  { phrase: '… is a contributing factor.', example: 'Stress <b>is a contributing factor</b> in many health problems.', note: 'Suggests it\'s one of several causes.' },
+  { phrase: '… is the main reason for …', example: 'Poverty <b>is the main reason for</b> school dropout rates.', note: 'Identifies the primary cause.' },
+  { phrase: '… leads / led to …', example: 'Poor time management <b>led to</b> the project\'s failure.', note: 'Direct cause-and-effect link.' },
+  { phrase: 'With …, …', example: '<b>With</b> the rise of social media, traditional news outlets have lost readership.', note: 'Describes a background condition that produces an effect.' }
+];
+
+// UVD 14: Report Writing Expressions
+const UVD14 = [
+  { phrase: 'Report on internal survey results', example: '<b>Report on Internal Survey Results</b> — Employee Satisfaction 2024', note: 'Standard report title format.' },
+  { phrase: 'A survey was conducted … (when?) to find out … (what?)', example: '<b>A survey was conducted</b> in March 2024 <b>to find out</b> how employees feel about remote work.', note: 'Passive voice; standard report opening.' },
+  { phrase: '… (how many?) people were interviewed in a survey about …', example: '<b>250 people were interviewed</b> in a survey <b>about</b> workplace communication preferences.', note: 'Specifies sample size and topic.' },
+  { phrase: 'According to the survey, more than half of the respondents …', example: '<b>According to the survey, more than half of the respondents</b> prefer hybrid working arrangements.', note: 'Highlights majority findings.' },
+  { phrase: 'Concerning / Regarding …, the number of … is around / about …', example: '<b>Concerning</b> training opportunities, the number of satisfied employees <b>is around</b> 65%.', note: 'Introduces specific data points.' },
+  { phrase: 'The results show / illustrate / indicate that …', example: '<b>The results indicate that</b> flexible working hours significantly improve productivity.', note: 'Formal way to present findings.' },
+  { phrase: 'The results show that the most / least popular choice is …', example: '<b>The results show that the most popular choice</b> is a four-day work week.', note: 'Highlights extremes in data.' },
+  { phrase: 'The number of … has increased / decreased by … % / … times.', example: 'The number of remote workers <b>has increased by 35%</b> since 2020.', note: 'Describes quantitative changes.' },
+  { phrase: 'There is a sharp / slight increase / decrease in …', example: '<b>There is a sharp increase in</b> the use of video conferencing tools.', note: 'Describes the degree of change.' },
+  { phrase: 'The sharpest / biggest increase happened in …', example: '<b>The sharpest increase happened in</b> the 18–25 age group.', note: 'Identifies the most significant change.' },
+  { phrase: 'To boost / improve …, we suggest …', example: '<b>To improve</b> employee satisfaction, <b>we suggest</b> introducing more flexible working hours.', note: 'Standard recommendation format.' }
+];
+
+// UVD 15: Advantages and Disadvantages
+const UVD15 = {
+  advantages: [
+    { phrase: 'It enables … to …', example: 'Social media <b>enables</b> people <b>to</b> connect across great distances.' },
+    { phrase: 'It is good for …', example: 'Regular exercise <b>is good for</b> both physical and mental health.' },
+    { phrase: 'The benefits include …', example: '<b>The benefits include</b> cost savings, improved efficiency, and higher employee satisfaction.' },
+    { phrase: 'The good thing about it is …', example: '<b>The good thing about</b> working from home <b>is</b> the flexibility it offers.' }
+  ],
+  disadvantages: [
+    { phrase: 'It adversely affects …', example: 'Screen time <b>adversely affects</b> children\'s sleep patterns and attention spans.' },
+    { phrase: 'It causes harm / damage to …', example: 'Air pollution <b>causes harm to</b> the respiratory system.' },
+    { phrase: 'It has a negative impact on …', example: 'Social media <b>has a negative impact on</b> teenagers\' self-esteem.' },
+    { phrase: 'The downside of it is …', example: '<b>The downside of</b> online shopping <b>is</b> the environmental cost of packaging and delivery.' }
+  ]
+};
+
+// UVD 16: Argumentative Writing
+const UVD16 = [
+  { phrase: 'Experts state that …', example: '<b>Experts state that</b> early childhood education has a lasting impact on cognitive development.', note: 'Cites authority to strengthen your argument.' },
+  { phrase: 'It has been found that …', example: '<b>It has been found that</b> regular exercise reduces the risk of heart disease by up to 30%.', note: 'Passive; implies research-backed evidence.' },
+  { phrase: 'There is plentiful evidence on …', example: '<b>There is plentiful evidence on</b> the link between air pollution and respiratory diseases.', note: 'Asserts that evidence is abundant.' },
+  { phrase: 'Studies have shown that …', example: '<b>Studies have shown that</b> bilingual individuals tend to have better problem-solving skills.', note: 'References research generally.' },
+  { phrase: 'It is widely believed / accepted that …', example: '<b>It is widely accepted that</b> education is the most powerful tool for social change.', note: 'Appeals to common consensus.' },
+  { phrase: 'Based on this insight, …', example: '<b>Based on this insight</b>, schools should integrate more project-based learning.', note: 'Transitions from evidence to recommendation.' },
+  { phrase: 'According to …', example: '<b>According to</b> the World Health Organisation, processed sugar should be limited in children\'s diets.', note: 'Cites a specific source.' },
+  { phrase: 'A significant factor is that …', example: '<b>A significant factor is that</b> many students lack access to reliable internet at home.', note: 'Highlights an important consideration.' },
+  { phrase: 'One possible means of … (gerund)', example: '<b>One possible means of</b> reducing traffic congestion <b>is</b> encouraging cycling.', note: 'Suggests a potential solution.' },
+  { phrase: 'One of the recommended actions is …', example: '<b>One of the recommended actions is</b> to invest more in renewable energy infrastructure.', note: 'Presents a specific recommendation.' },
+  { phrase: 'A piece of evidence in favour of / against … is that …', example: '<b>A piece of evidence in favour of</b> remote work <b>is that</b> employee productivity often increases.', note: 'Presents evidence for or against a position.' },
+  { phrase: 'Contrary to popular belief, …', example: '<b>Contrary to popular belief</b>, multitasking actually reduces productivity.', note: 'Challenges a common assumption.' },
+  { phrase: 'Argue for / against', example: 'Many educators <b>argue against</b> standardised testing, claiming it doesn\'t measure true ability.', note: 'States a position clearly.' },
+  { phrase: 'With no doubt, …', example: '<b>With no doubt</b>, climate change is one of the greatest challenges of our time.', note: 'Strong assertion; use sparingly.' },
+  { phrase: 'In addition to …', example: '<b>In addition to</b> being environmentally friendly, cycling is excellent for your health.', note: 'Adds a supplementary point.' },
+  { phrase: 'More importantly, …', example: 'The policy saves money. <b>More importantly</b>, it improves quality of life.', note: 'Elevates the significance of a point.' },
+  { phrase: 'On the contrary, …', example: 'The results did not show a decline. <b>On the contrary</b>, performance improved.', note: 'Directly opposes the previous statement.' },
+  { phrase: 'On the other hand, …', example: 'Technology improves efficiency. <b>On the other hand</b>, it can lead to job displacement.', note: 'Introduces a counterpoint.' },
+  { phrase: 'While some may argue (that) …, it is believed that …', example: '<b>While some may argue that</b> social media connects people, <b>it is believed that</b> it can also increase feelings of isolation.', note: 'Acknowledges opposing view before presenting yours.' },
+  { phrase: 'Having taken both the advantages and drawbacks of … into account, it is believed that …', example: '<b>Having taken both the advantages and drawbacks of</b> remote work <b>into account, it is believed that</b> a hybrid model offers the best solution.', note: 'Classic concluding sentence for argumentative essays.' }
+];
+
+// ============================================================
+// SLIDE GENERATION
+// ============================================================
+
+let slides = [];
+let currentSlide = 0;
+
+function buildSlides() {
+  slides = [];
+
+  // 1. Title Slide
+  slides.push({
+    type: 'title',
+    html: `
+      <div class="title-slide animate-in">
+        <h1>Vocabulary Masterclass</h1>
+        <p class="subtitle">An interactive journey through essential vocabulary for academic writing, environmental protection, technology, and communication.</p>
+        <div class="meta">
+          <div class="meta-item">📚 7 Units</div>
+          <div class="meta-item">📝 100+ Terms</div>
+          <div class="meta-item">🧠 Interactive Quizzes</div>
+          <div class="meta-item">🎯 Knowledge Checks</div>
+        </div>
+        <button class="start-btn" onclick="goToSlide(1)">Begin Learning →</button>
+      </div>`
+  });
+
+  // 2. Table of Contents
+  slides.push({
+    type: 'toc',
+    html: `
+      <div class="toc-slide animate-in">
+        <h2>📖 Table of Contents</h2>
+        <div class="toc-grid">
+          ${Object.entries(UNIT_THEMES).map(([num, u]) => `
+            <div class="toc-card" onclick="goToUnitSlide(${parseInt(num)})" style="--tc:${u.color}">
+              <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${u.color};border-radius:4px 0 0 4px;"></div>
+              <div class="toc-num" style="color:${u.color}">Unit ${num} · ${u.short}</div>
+              <div class="toc-title">${u.icon} ${u.name}</div>
+              <div class="toc-count">${getUnitWordCount(parseInt(num))} items</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  // 3. UVD 10: Environmental Protection
+  buildVocabUnit(10, UVD10, '🌍', 'Environmental Protection',
+    'Explore the essential vocabulary for discussing our planet\'s most pressing environmental challenges — from biodiversity loss to sustainable solutions.');
+
+  // 4. UVD 11: Technology & Communication
+  buildVocabUnit(11, UVD11, '💻', 'Technology & Communication',
+    'Master the language of the digital age — from cybersecurity and social media to the nuances of face-to-face versus online communication.');
+
+  // 5. UVD 12: Additive & Contrastive
+  buildExpressionUnit(12, '🔗', 'Additive & Contrastive Relationships',
+    'Learn to connect and contrast ideas like a skilled writer. These expressions are the glue that holds coherent arguments together.',
+    () => buildUVD12Slides());
+
+  // 6. UVD 13: Cause-Effect
+  buildExpressionUnit(13, '⚡', 'Cause-Effect Relationships',
+    'Master the language of causation — essential for explaining why things happen and what consequences they bring.',
+    () => buildUVD13Slides());
+
+  // 7. UVD 14: Report Writing
+  buildExpressionUnit(14, '📊', 'Report Writing Expressions',
+    'Professional phrases for writing clear, data-driven reports. Perfect for academic and business contexts.',
+    () => buildUVD14Slides());
+
+  // 8. UVD 15: Advantages & Disadvantages
+  buildAdvDisadvUnit();
+
+  // 9. UVD 16: Argumentative Writing
+  buildExpressionUnit(16, '✍️', 'Argumentative Writing',
+    'Powerful expressions for building persuasive, evidence-based arguments — the backbone of strong academic essays.',
+    () => buildUVD16Slides());
+
+  // Grand Summary
+  slides.push({
+    type: 'grand-summary',
+    unit: 0,
+    html: `
+      <div class="summary-slide animate-in">
+        <h2>🏆 Grand Summary — All Units</h2>
+        <div class="mindmap-container">
+          ${Object.entries(UNIT_THEMES).map(([num, u]) => `
+            <div style="width:100%;max-width:800px;">
+              <div class="mindmap-center" style="background:${u.color}22;color:${u.color};border:1px solid ${u.color}44;">
+                ${u.icon} Unit ${num}: ${u.name}
+              </div>
+              <div class="mindmap-branches" style="margin-top:12px;">
+                ${getUnitWords(parseInt(num)).map(w => `
+                  <div class="mindmap-branch" style="border-color:${u.color}33;">${w}</div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  // Grand Knowledge Check
+  buildGrandQuiz();
+}
+
+function getUnitStartSlide(unitNum) {
+  for (let i = 0; i < slides.length; i++) {
+    if (slides[i].unit === unitNum) return i;
+  }
+  return 0;
+}
+
+function getUnitWordCount(unitNum) {
+  if (unitNum === 10) return UVD10.length;
+  if (unitNum === 11) return UVD11.length;
+  if (unitNum === 12) return UVD12.additive.length + UVD12.contrastive.length;
+  if (unitNum === 13) return UVD13.length;
+  if (unitNum === 14) return UVD14.length;
+  if (unitNum === 15) return UVD15.advantages.length + UVD15.disadvantages.length;
+  if (unitNum === 16) return UVD16.length;
+  return 0;
+}
+
+function getUnitWords(unitNum) {
+  if (unitNum === 10) return UVD10.map(w => w.word);
+  if (unitNum === 11) return UVD11.map(w => w.word);
+  if (unitNum === 12) return [...UVD12.additive, ...UVD12.contrastive].map(e => e.phrase);
+  if (unitNum === 13) return UVD13.map(e => e.phrase);
+  if (unitNum === 14) return UVD14.map(e => e.phrase);
+  if (unitNum === 15) return [...UVD15.advantages, ...UVD15.disadvantages].map(e => e.phrase);
+  if (unitNum === 16) return UVD16.map(e => e.phrase);
+  return [];
+}
+
+function buildVocabUnit(unitNum, words, icon, title, desc) {
+  const theme = UNIT_THEMES[unitNum];
+  const color = theme.color;
+
+  // Unit intro
+  slides.push({
+    type: 'unit-intro',
+    unit: unitNum,
+    html: `
+      <div class="unit-intro animate-in ${theme.theme}">
+        <div class="unit-icon">${icon}</div>
+        <h2 style="color:${color}">${title}</h2>
+        <p class="unit-desc">${desc}</p>
+        <div class="word-preview">
+          ${words.map(w => `<span class="word-chip">${w.word}</span>`).join('')}
+        </div>
+      </div>`
+  });
+
+  // Word slides
+  words.forEach((w, i) => {
+    const syllableHTML = w.syllables.map((s, si) => {
+      const isStressed = si === w.stressed;
+      const colorClass = SYLLABLE_COLORS[si % SYLLABLE_COLORS.length];
+      return `<span class="syllable ${colorClass} ${isStressed ? 'stressed' : ''}">${s}</span>`;
+    }).join('');
+
+    const posColors = {
+      'noun': '#4fc3f7', 'verb': '#00c9a7', 'adjective': '#ffb74d',
+      'noun phrase': '#b388ff', 'adverb': '#f48fb1',
+      'noun / verb': '#80cbc4', 'noun / adjective': '#ffd54f',
+      'verb phrase': '#00c9a7', 'adjective / adverb': '#ffb74d'
+    };
+    const posColor = posColors[w.pos] || '#999';
+
+    slides.push({
+      type: 'word',
+      unit: unitNum,
+      html: `
+        <div class="word-slide animate-in">
+          <div class="word-header">
+            <div class="word-main">
+              <div class="word-title" style="color:${color}">${w.word} <button class="pronounce-btn" onclick="pronounce('${w.word.replace(/'/g, "\\'")}', this)" title="Listen to pronunciation">🔊</button></div>
+              <div class="word-phonetic">${w.phonetic}</div>
+              <div class="syllable-display">${syllableHTML}</div>
+              <span class="word-pos" style="background:${posColor}22;color:${posColor};border:1px solid ${posColor}44;">${w.pos}</span>
+              <div class="word-definition">${w.definition}</div>
+              <div class="word-simple">${w.simple}</div>
+            </div>
+            <div class="word-illustration" style="background:${color}11;border-color:${color}33;">${w.illustration}</div>
+          </div>
+
+          <div class="section-card">
+            <h3><span class="icon">🔗</span> Collocations</h3>
+            <div class="collocation-list">
+              ${w.collocations.map(c => {
+                // Highlight the target word within the collocation, preserving natural word order
+                const regex = new RegExp('(' + escapeRegex(w.word) + ')', 'gi');
+                const rendered = c.replace(regex, '<span class="highlight" style="color:' + color + '">$1</span>');
+                return `
+                <div class="collocation-item">
+                  <span class="bullet" style="background:${color}"></span>
+                  <span>${rendered}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h3><span class="icon">💬</span> Example Sentences</h3>
+            <div class="example-list">
+              ${w.examples.map((e, ei) => {
+                const plainText = e.replace(/<[^>]*>/g, '').replace(/'/g, "\\'");
+                return `
+                <div class="example-item" style="border-left-color:${color};display:flex;align-items:flex-start;gap:6px;">
+                  <span class="num" style="color:${color}">${ei + 1}.</span>
+                  <span style="flex:1;">${e}</span>
+                  <button class="pronounce-btn-sm" onclick="pronounce('${plainText}', this)" title="Listen to sentence">🔊</button>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="food-for-thought">
+            <h3>🤔 Food for Thought</h3>
+            <p>${w.foodForThought}</p>
+          </div>
+        </div>`
+    });
+  });
+
+  // Summary
+  slides.push({
+    type: 'summary',
+    unit: unitNum,
+    html: `
+      <div class="summary-slide animate-in ${theme.theme}">
+        <h2 style="color:${color}">📋 Unit ${unitNum} Summary — ${title}</h2>
+        <div class="mindmap-container">
+          <div class="mindmap-center" style="background:${color}22;color:${color};border:1px solid ${color}44;">
+            ${icon} ${title}
+          </div>
+          <div class="mindmap-branches" style="margin-top:16px;">
+            ${words.map(w => `
+              <div class="mindmap-branch" style="border-color:${color}33;">
+                <strong style="color:${color}">${w.word}</strong> — ${w.definition.split('.')[0]}.
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>`
+  });
+
+  // Knowledge Check
+  buildVocabQuiz(unitNum, words, color);
+}
+
+function buildVocabQuiz(unitNum, words, color) {
+  const theme = UNIT_THEMES[unitNum];
+  const quizWords = shuffleArray([...words]).slice(0, Math.min(8, words.length));
+
+  // Fill-in-the-blank
+  const fillQuestions = quizWords.slice(0, 4).map(w => {
+    const sentence = w.examples[0].replace(/<b>(.*?)<\/b>/g, '________');
+    return { word: w.word, sentence };
+  });
+  const fillWordBank = shuffleArray(fillQuestions.map(q => q.word));
+
+  // Multiple choice
+  const mcQuestions = quizWords.slice(4, 8).map(w => {
+    const correctDef = w.definition;
+    const otherDefs = words.filter(ow => ow.word !== w.word).map(ow => ow.definition);
+    const wrongDefs = shuffleArray(otherDefs).slice(0, 3);
+    const options = shuffleArray([correctDef, ...wrongDefs]);
+    return { word: w.word, correctDef, options };
+  });
+
+  const quizId = `quiz-${unitNum}`;
+
+  slides.push({
+    type: 'quiz',
+    unit: unitNum,
+    html: `
+      <div class="quiz-slide animate-in">
+        <h2 style="color:${color}">🧠 Knowledge Check — Unit ${unitNum}</h2>
+        <p class="quiz-subtitle">Test your understanding of the vocabulary from this unit.</p>
+
+        <div style="margin-bottom:24px;">
+          <h3 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;color:${color};">📝 Part A: Fill in the Blanks</h3>
+          <div style="background:var(--surface);border-radius:12px;padding:12px 16px;margin-bottom:14px;border-left:4px solid ${color};">
+            <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.5;">
+              <strong style="color:${color};">📌 Instructions:</strong> Read each sentence and fill in the blank with the correct word. Use the <strong style="color:var(--text);">Word Bank</strong> below — click a word to insert it, or type your answer directly.
+            </p>
+          </div>
+          <div class="word-bank" id="${quizId}-wordbank">
+            <div class="word-bank-label">💡 Word Bank</div>
+            ${fillWordBank.map((w, i) => `<span class="word-chip" onclick="useWordChip(this, '${quizId}-fill-0', '${quizId}-wordbank')">${w}</span>`).join('')}
+          </div>
+          ${fillQuestions.map((q, i) => `
+            <div class="quiz-fill" data-answer="${q.word.toLowerCase()}">
+              <span style="font-size:13px;color:var(--text-dim);min-width:24px;">${i + 1}.</span>
+              <div style="flex:1;font-size:14px;line-height:1.6;color:var(--text);margin-right:8px;">${q.sentence}</div>
+              <input type="text" placeholder="Type here..." id="${quizId}-fill-${i}" autocomplete="off" style="max-width:180px;">
+              <button class="check-btn" onclick="checkFill('${quizId}-fill-${i}','${q.word.toLowerCase()}')">✓</button>
+            </div>
+          `).join('')}
+        </div>
+
+        <div>
+          <h3 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;color:${color};">🎯 Part B: Multiple Choice</h3>
+          ${mcQuestions.map((q, qi) => `
+            <div class="quiz-question">
+              <div class="q-num">Question ${qi + 1}</div>
+              <div class="q-text">What does <span style="color:${color};font-weight:800;">"${q.word}"</span> mean?</div>
+              <div class="quiz-options">
+                ${q.options.map((opt, oi) => `
+                  <div class="quiz-option" onclick="selectMC(this, '${quizId}-mc-${qi}', ${oi === q.options.indexOf(q.correctDef)})" data-correct="${oi === q.options.indexOf(q.correctDef)}">
+                    <span class="opt-letter">${String.fromCharCode(65 + oi)}</span>
+                    <span>${opt}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <button class="quiz-submit" onclick="showQuizResult('${quizId}')">Check My Answers →</button>
+        <div class="quiz-result" id="${quizId}-result">
+          <div class="score" id="${quizId}-score">0/0</div>
+          <div class="score-label">Your Score</div>
+          <div class="score-msg" id="${quizId}-msg"></div>
+        </div>
+      </div>`
+  });
+}
+
+function buildExpressionUnit(unitNum, icon, title, desc, slideBuilder) {
+  const theme = UNIT_THEMES[unitNum];
+  const color = theme.color;
+
+  // Unit intro
+  slides.push({
+    type: 'unit-intro',
+    unit: unitNum,
+    html: `
+      <div class="unit-intro animate-in ${theme.theme}">
+        <div class="unit-icon">${icon}</div>
+        <h2 style="color:${color}">${title}</h2>
+        <p class="unit-desc">${desc}</p>
+      </div>`
+  });
+
+  // Expression slides
+  slideBuilder();
+}
+
+function buildUVD12Slides() {
+  const color = UNIT_THEMES[12].color;
+
+  // Additive
+  slides.push({
+    type: 'expression',
+    unit: 12,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">➕ Additive Relationships</h2>
+          <p class="expr-desc">Use these expressions to add information, build arguments, and strengthen your points.</p>
+        </div>
+        <div class="expr-grid">
+          ${UVD12.additive.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  // Contrastive
+  slides.push({
+    type: 'expression',
+    unit: 12,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">↔️ Contrastive Relationships</h2>
+          <p class="expr-desc">Use these expressions to show differences, present opposing views, or introduce unexpected information.</p>
+        </div>
+        <div class="expr-grid">
+          ${UVD12.contrastive.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  // Quiz
+  buildExprQuiz(12, [...UVD12.additive, ...UVD12.contrastive], color);
+}
+
+function buildUVD13Slides() {
+  const color = UNIT_THEMES[13].color;
+
+  slides.push({
+    type: 'expression',
+    unit: 13,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">⚡ Cause-Effect Relationships</h2>
+          <p class="expr-desc">Master the language of causation — essential for explaining why things happen and what consequences they bring.</p>
+        </div>
+        <div class="expr-grid">
+          ${UVD13.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  buildExprQuiz(13, UVD13, color);
+}
+
+function buildUVD14Slides() {
+  const color = UNIT_THEMES[14].color;
+
+  slides.push({
+    type: 'expression',
+    unit: 14,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">📊 Report Writing Expressions</h2>
+          <p class="expr-desc">Professional phrases for writing clear, data-driven reports in academic and business contexts.</p>
+        </div>
+        <div class="expr-grid">
+          ${UVD14.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  buildExprQuiz(14, UVD14, color);
+}
+
+function buildAdvDisadvUnit() {
+  const color = UNIT_THEMES[15].color;
+  const theme = UNIT_THEMES[15];
+
+  slides.push({
+    type: 'unit-intro',
+    unit: 15,
+    html: `
+      <div class="unit-intro animate-in ${theme.theme}">
+        <div class="unit-icon">⚖️</div>
+        <h2 style="color:${color}">Advantages & Disadvantages</h2>
+        <p class="unit-desc">Essential expressions for presenting balanced arguments — covering both the benefits and drawbacks of any topic.</p>
+      </div>`
+  });
+
+  slides.push({
+    type: 'expression',
+    unit: 15,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">⚖️ Advantages & Disadvantages</h2>
+          <p class="expr-desc">Use these paired expressions to present balanced arguments in essays and discussions.</p>
+        </div>
+        <div class="two-col">
+          <div>
+            <div class="col-header" style="background:rgba(0,201,167,0.15);color:var(--green);">✅ Advantages / Benefits / Pros</div>
+            <div class="col-body">
+              ${UVD15.advantages.map(e => `
+                <div class="col-item" style="border-left:3px solid var(--green);">
+                  <div style="font-weight:700;color:var(--green);margin-bottom:4px;">${e.phrase}</div>
+                  <div style="font-size:13px;color:var(--text-dim);font-style:italic;">${e.example}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="col-header" style="background:rgba(239,83,80,0.15);color:var(--red);">❌ Disadvantages / Drawbacks / Cons</div>
+            <div class="col-body">
+              ${UVD15.disadvantages.map(e => `
+                <div class="col-item" style="border-left:3px solid var(--red);">
+                  <div style="font-weight:700;color:var(--red);margin-bottom:4px;">${e.phrase}</div>
+                  <div style="font-size:13px;color:var(--text-dim);font-style:italic;">${e.example}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`
+  });
+
+  buildExprQuiz(15, [...UVD15.advantages, ...UVD15.disadvantages], color);
+}
+
+function buildUVD16Slides() {
+  const color = UNIT_THEMES[16].color;
+
+  // Split into two slides due to 20 expressions
+  const first10 = UVD16.slice(0, 10);
+  const last10 = UVD16.slice(10, 20);
+
+  slides.push({
+    type: 'expression',
+    unit: 16,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">✍️ Argumentative Writing (1/2)</h2>
+          <p class="expr-desc">Powerful expressions for building persuasive, evidence-based arguments.</p>
+        </div>
+        <div class="expr-grid">
+          ${first10.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  slides.push({
+    type: 'expression',
+    unit: 16,
+    html: `
+      <div class="expr-slide animate-in">
+        <div class="expr-header">
+          <h2 style="color:${color}">✍️ Argumentative Writing (2/2)</h2>
+          <p class="expr-desc">More expressions for strengthening your academic arguments.</p>
+        </div>
+        <div class="expr-grid">
+          ${last10.map(e => `
+            <div class="expr-card">
+              <div class="expr-phrase" style="color:${color}">${e.phrase} <button class="pronounce-btn-sm" onclick="pronounce('${e.phrase.replace(/'/g, "\\'").replace(/[()]/g, '')}', this)" title="Listen">🔊</button></div>
+              <div class="expr-example" style="display:flex;align-items:flex-start;gap:6px;">${e.example} <button class="pronounce-btn-sm" onclick="pronounce('${e.example.replace(/<[^>]*>/g, '').replace(/'/g, "\\'")}', this)" title="Listen">🔊</button></div>
+              ${e.note ? `<div class="expr-note">💡 ${e.note}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`
+  });
+
+  buildExprQuiz(16, UVD16, color);
+}
+
+function buildExprQuiz(unitNum, expressions, color) {
+  const quizId = `quiz-${unitNum}`;
+  const selected = shuffleArray([...expressions]).slice(0, 6);
+
+  // Matching exercise — left: expressions, right: examples with blanks
+  const leftItems = selected.map(e => e.phrase);
+
+  // Build right items: replace <b>...</b> tagged content in the example with a blank
+  // This is reliable because examples already mark the key expression with <b> tags
+  const rightData = selected.map((e, origIdx) => {
+    const blanked = e.example.replace(/<b>[\s\S]*?<\/b>/g, '________');
+    return { origIdx, blanked };
+  });
+  const rightShuffled = shuffleArray(rightData);
+
+  // Store the mapping: right shuffled index → original expression index
+  // rightShuffled[i].origIdx tells us which left item (same index) it matches
+  const rightMapping = rightShuffled.map(r => r.origIdx);
+
+  // Store mapping in global matchState for validation
+  matchState[quizId] = { left: null, right: null, pairs: [], mapping: rightMapping };
+
+  slides.push({
+    type: 'quiz',
+    unit: unitNum,
+    html: `
+      <div class="quiz-slide animate-in">
+        <h2 style="color:${color}">🧠 Knowledge Check — Unit ${unitNum}</h2>
+        <p class="quiz-subtitle">Fill in the blanks by matching expressions to their contexts.</p>
+
+        <div style="background:var(--surface);border-radius:12px;padding:14px 20px;margin-bottom:16px;border-left:4px solid ${color};">
+          <p style="font-size:13px;color:var(--text-dim);margin:0;line-height:1.6;">
+            <strong style="color:${color};">📌 How to play:</strong><br>
+            ① Click an <strong style="color:var(--text);">expression</strong> on the left.<br>
+            ② Click the <strong style="color:var(--text);">sentence with the blank</strong> on the right where it fits.<br>
+            ③ If correct, both items turn <span style="color:var(--green);">green</span>. If wrong, they flash <span style="color:var(--red);">red</span> — try again!<br>
+            ④ Match all pairs, then click <strong style="color:var(--text);">Check Matches</strong>.
+          </p>
+        </div>
+
+        <div class="matching-container" id="${quizId}-match">
+          <div class="matching-col">
+            <div style="text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:8px;">Expressions</div>
+            ${leftItems.map((item, i) => `
+              <div class="matching-item" data-match="${quizId}" data-side="left" data-index="${i}" onclick="selectMatch(this)">${item}</div>
+            `).join('')}
+          </div>
+          <div style="display:flex;align-items:center;font-size:24px;color:var(--text-dim);">→</div>
+          <div class="matching-col">
+            <div style="text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${color};margin-bottom:8px;">Sentences (fill the blank)</div>
+            ${rightShuffled.map((item, i) => `
+              <div class="matching-item" data-match="${quizId}" data-side="right" data-index="${i}" onclick="selectMatch(this)" style="font-size:12px;line-height:1.4;">${item.blanked}</div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:16px;">
+          <button class="quiz-submit" onclick="checkMatching('${quizId}', ${selected.length})">Check Matches →</button>
+        </div>
+        <div class="quiz-result" id="${quizId}-result">
+          <div class="score" id="${quizId}-score">0/0</div>
+          <div class="score-label">Matches Found</div>
+          <div class="score-msg" id="${quizId}-msg"></div>
+        </div>
+      </div>`
+  });
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildGrandQuiz() {
+  const allWords = [...UVD10, ...UVD11];
+  const selected = shuffleArray(allWords).slice(0, 10);
+  const quizId = 'quiz-grand';
+
+  const fillQuestions = selected.slice(0, 5).map(w => {
+    const sentence = w.examples[0].replace(/<b>(.*?)<\/b>/g, '________');
+    return { word: w.word, sentence };
+  });
+  const fillWordBank = shuffleArray(fillQuestions.map(q => q.word));
+
+  const mcQuestions = selected.slice(5, 10).map(w => {
+    const correctDef = w.definition;
+    const otherDefs = allWords.filter(ow => ow.word !== w.word).map(ow => ow.definition);
+    const wrongDefs = shuffleArray(otherDefs).slice(0, 3);
+    const options = shuffleArray([correctDef, ...wrongDefs]);
+    return { word: w.word, correctDef, options };
+  });
+
+  slides.push({
+    type: 'quiz',
+    unit: 0,
+    html: `
+      <div class="quiz-slide animate-in">
+        <h2 style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏆 Grand Knowledge Check</h2>
+        <p class="quiz-subtitle">A comprehensive quiz covering vocabulary from Units 10 & 11. Good luck!</p>
+
+        <div style="margin-bottom:24px;">
+          <h3 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;color:var(--accent);">📝 Part A: Fill in the Blanks</h3>
+          <div style="background:var(--surface);border-radius:12px;padding:12px 16px;margin-bottom:14px;border-left:4px solid var(--accent);">
+            <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.5;">
+              <strong style="color:var(--accent);">📌 Instructions:</strong> Read each sentence and fill in the blank with the correct word. Use the <strong style="color:var(--text);">Word Bank</strong> below — click a word to insert it, or type your answer directly.
+            </p>
+          </div>
+          <div class="word-bank" id="${quizId}-wordbank">
+            <div class="word-bank-label">💡 Word Bank</div>
+            ${fillWordBank.map((w, i) => `<span class="word-chip" onclick="useWordChip(this, '${quizId}-wordbank')">${w}</span>`).join('')}
+          </div>
+          ${fillQuestions.map((w, i) => {
+            const sentence = w.examples[0].replace(/<b>(.*?)<\/b>/g, '________');
+            return `
+              <div class="quiz-fill" data-answer="${w.word.toLowerCase()}">
+                <span style="font-size:13px;color:var(--text-dim);min-width:24px;">${i + 1}.</span>
+                <div style="flex:1;font-size:14px;line-height:1.6;color:var(--text);margin-right:8px;">${sentence}</div>
+                <input type="text" placeholder="Type here..." id="${quizId}-fill-${i}" autocomplete="off" style="max-width:180px;">
+                <button class="check-btn" onclick="checkFill('${quizId}-fill-${i}','${w.word.toLowerCase()}')">✓</button>
+              </div>`;
+          }).join('')}
+        </div>
+
+        <div>
+          <h3 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;color:var(--accent);">🎯 Part B: Multiple Choice</h3>
+          ${mcQuestions.map((q, qi) => `
+            <div class="quiz-question">
+              <div class="q-num">Question ${qi + 1}</div>
+              <div class="q-text">What does <span style="color:var(--accent);font-weight:800;">"${q.word}"</span> mean?</div>
+              <div class="quiz-options">
+                ${q.options.map((opt, oi) => `
+                  <div class="quiz-option" onclick="selectMC(this, '${quizId}-mc-${qi}', ${oi === q.options.indexOf(q.correctDef)})" data-correct="${oi === q.options.indexOf(q.correctDef)}">
+                    <span class="opt-letter">${String.fromCharCode(65 + oi)}</span>
+                    <span>${opt}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <button class="quiz-submit" onclick="showQuizResult('${quizId}')">Check My Answers →</button>
+        <div class="quiz-result" id="${quizId}-result">
+          <div class="score" id="${quizId}-score">0/0</div>
+          <div class="score-label">Your Score</div>
+          <div class="score-msg" id="${quizId}-msg"></div>
+        </div>
+      </div>`
+  });
+}
+
+// ============================================================
+// NAVIGATION & INTERACTION
+// ============================================================
+
+function renderSlide(index) {
+  const container = document.getElementById('slide-container');
+  const prev = container.querySelector('.slide.active');
+
+  if (prev) {
+    prev.classList.remove('active');
+    prev.classList.add('exit-left');
+    setTimeout(() => prev.remove(), 500);
+  }
+
+  const slide = slides[index];
+  const div = document.createElement('div');
+  div.className = 'slide';
+  div.innerHTML = slide.html;
+  container.appendChild(div);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      div.classList.add('active');
+    });
+  });
+
+  // Update UI
+  currentSlide = index;
+  updateProgress();
+  updateNavDots();
+  updateTopBar(slide);
+
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').disabled = index === slides.length - 1;
+}
+
+function updateProgress() {
+  const pct = ((currentSlide + 1) / slides.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('slide-counter').textContent = `${currentSlide + 1} / ${slides.length}`;
+}
+
+function updateTopBar(slide) {
+  const badge = document.getElementById('unit-badge');
+  if (slide.unit && UNIT_THEMES[slide.unit]) {
+    const u = UNIT_THEMES[slide.unit];
+    badge.textContent = `${u.icon} Unit ${slide.unit}: ${u.name}`;
+    badge.style.background = u.color + '22';
+    badge.style.color = u.color;
+  } else {
+    badge.textContent = 'Vocabulary Masterclass';
+    badge.style.background = 'var(--surface2)';
+    badge.style.color = 'var(--text-dim)';
+  }
+}
+
+function updateNavDots() {
+  const dotsContainer = document.getElementById('nav-dots');
+  dotsContainer.innerHTML = '';
+
+  // Show dots for current unit section
+  const unitSlides = slides.map((s, i) => ({ ...s, index: i }));
+  const maxDots = 30;
+  const step = Math.max(1, Math.floor(slides.length / maxDots));
+
+  for (let i = 0; i < slides.length; i += step) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === currentSlide ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    dot.title = `Slide ${i + 1}`;
+    dotsContainer.appendChild(dot);
+  }
+}
+
+function nextSlide() {
+  if (currentSlide < slides.length - 1) renderSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+  if (currentSlide > 0) renderSlide(currentSlide - 1);
+}
+
+function goToSlide(index) {
+  if (index >= 0 && index < slides.length) renderSlide(index);
+}
+
+function goToUnitSlide(unitNum) {
+  const idx = getUnitStartSlide(unitNum);
+  if (idx > 0) goToSlide(idx);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+  if (e.key === 'End') { e.preventDefault(); goToSlide(slides.length - 1); }
+});
+
+// Touch/swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 60) {
+    if (diff > 0) nextSlide();
+    else prevSlide();
+  }
+});
+
+// ============================================================
+// PRONUNCIATION (Web Speech API)
+// ============================================================
+
+function pronounce(text, btn) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.85;
+  utterance.pitch = 1;
+
+  // Try to pick a good English voice
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Female'))
+    || voices.find(v => v.lang === 'en-US' && !v.localService)
+    || voices.find(v => v.lang === 'en-US')
+    || voices.find(v => v.lang.startsWith('en'));
+  if (preferred) utterance.voice = preferred;
+
+  if (btn) btn.classList.add('speaking');
+  utterance.onend = () => { if (btn) btn.classList.remove('speaking'); };
+  utterance.onerror = () => { if (btn) btn.classList.remove('speaking'); };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+// Pre-load voices (some browsers load them asynchronously)
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
+// ============================================================
+// QUIZ INTERACTIONS
+// ============================================================
+
+function useWordChip(chip, bankId) {
+  const word = chip.textContent;
+  const bank = document.getElementById(bankId);
+  // Find the first empty, non-disabled input in the same quiz slide
+  const slide = bank.closest('.quiz-slide');
+  const inputs = slide.querySelectorAll('.quiz-fill input:not(:disabled)');
+  if (inputs.length > 0) {
+    const target = inputs[0];
+    target.value = word;
+    target.focus();
+    chip.classList.add('used');
+  }
+}
+
+function checkFill(inputId, answer) {
+  const input = document.getElementById(inputId);
+  const userAnswer = input.value.trim().toLowerCase();
+  if (!userAnswer) return;
+
+  if (userAnswer === answer || userAnswer === answer.replace(/\s+/g, '')) {
+    input.classList.remove('wrong');
+    input.classList.add('correct');
+    input.disabled = true;
+  } else {
+    input.classList.remove('correct');
+    input.classList.add('wrong');
+    setTimeout(() => input.classList.remove('wrong'), 1500);
+  }
+}
+
+function selectMC(el, groupId, isCorrect) {
+  const siblings = el.parentElement.querySelectorAll('.quiz-option');
+  siblings.forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  el.dataset.selected = 'true';
+
+  // Show immediate feedback
+  siblings.forEach(s => {
+    if (s.dataset.correct === 'true') s.classList.add('correct');
+    else if (s.dataset.selected === 'true' && !isCorrect) s.classList.add('wrong');
+  });
+}
+
+function showQuizResult(quizId) {
+  const result = document.getElementById(`${quizId}-result`);
+  const scoreEl = document.getElementById(`${quizId}-score`);
+  const msgEl = document.getElementById(`${quizId}-msg`);
+
+  let correct = 0;
+  let total = 0;
+
+  // Count fill-in-the-blank
+  const fills = document.querySelectorAll(`[id^="${quizId}-fill-"]`);
+  fills.forEach(input => {
+    total++;
+    if (input.classList.contains('correct')) correct++;
+  });
+
+  // Count MC
+  const mcGroups = new Set();
+  document.querySelectorAll(`[id^="${quizId}-mc-"]`).forEach(el => {
+    const groupId = el.id.replace(/-\d+$/, '');
+    mcGroups.add(groupId);
+  });
+  mcGroups.forEach(groupId => {
+    total++;
+    const selected = document.querySelector(`.quiz-option[data-selected="true"][onclick*="${groupId}"]`);
+    if (selected && selected.dataset.correct === 'true') correct++;
+  });
+
+  scoreEl.textContent = `${correct}/${total}`;
+  result.classList.add('show');
+
+  const pct = total > 0 ? (correct / total) * 100 : 0;
+  if (pct >= 90) msgEl.textContent = '🌟 Outstanding! You\'ve mastered this unit!';
+  else if (pct >= 70) msgEl.textContent = '👏 Great job! Just a few areas to review.';
+  else if (pct >= 50) msgEl.textContent = '📚 Good effort! Consider revisiting the vocabulary slides.';
+  else msgEl.textContent = '💪 Keep practising! Review the unit and try again.';
+}
+
+// Matching exercise
+let matchState = { selected: null };
+
+function selectMatch(el) {
+  const matchId = el.dataset.match;
+
+  if (!matchState[matchId]) matchState[matchId] = { left: null, right: null, pairs: [], mapping: [] };
+
+  const state = matchState[matchId];
+  const side = el.dataset.side;
+  const index = parseInt(el.dataset.index);
+
+  if (el.classList.contains('matched')) return;
+
+  // Remove previous selection on same side
+  document.querySelectorAll(`.matching-item[data-match="${matchId}"][data-side="${side}"].selected`).forEach(s => s.classList.remove('selected'));
+
+  el.classList.add('selected');
+
+  if (side === 'left') state.left = index;
+  else state.right = index;
+
+  // Check if both sides selected
+  if (state.left !== null && state.right !== null) {
+    const leftEl = document.querySelector(`.matching-item[data-match="${matchId}"][data-side="left"][data-index="${state.left}"]`);
+    const rightEl = document.querySelector(`.matching-item[data-match="${matchId}"][data-side="right"][data-index="${state.right}"]`);
+
+    // Use the mapping: mapping[rightIndex] gives the original left index this right item belongs to
+    const isCorrect = state.mapping && state.mapping[state.right] === state.left;
+
+    if (isCorrect) {
+      leftEl.classList.remove('selected');
+      rightEl.classList.remove('selected');
+      leftEl.classList.add('matched');
+      rightEl.classList.add('matched');
+      state.pairs.push(state.left);
+    } else {
+      leftEl.classList.add('wrong-match');
+      rightEl.classList.add('wrong-match');
+      setTimeout(() => {
+        leftEl.classList.remove('selected', 'wrong-match');
+        rightEl.classList.remove('selected', 'wrong-match');
+      }, 800);
+    }
+    state.left = null;
+    state.right = null;
+  }
+}
+
+function checkMatching(quizId, total) {
+  const state = matchState[quizId];
+  const result = document.getElementById(`${quizId}-result`);
+  const scoreEl = document.getElementById(`${quizId}-score`);
+  const msgEl = document.getElementById(`${quizId}-msg`);
+
+  const correct = state ? state.pairs.length : 0;
+  scoreEl.textContent = `${correct}/${total}`;
+  result.classList.add('show');
+
+  const pct = total > 0 ? (correct / total) * 100 : 0;
+  if (pct >= 90) msgEl.textContent = '🌟 Outstanding! You\'ve mastered these expressions!';
+  else if (pct >= 70) msgEl.textContent = '👏 Great job! Just a few to review.';
+  else if (pct >= 50) msgEl.textContent = '📚 Good effort! Try matching them again.';
+  else msgEl.textContent = '💪 Keep practising! Review the expressions and try again.';
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+buildSlides();
+renderSlide(0);
+</script>
+</body>
+</html>
